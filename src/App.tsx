@@ -15,7 +15,6 @@ function App() {
   const [ff, setFF] = useState<ffType>({ name: '1111', value: true })
 	const [data, setData] = useState({});
   const [hh, setHH] = useState(() =>{
-		// console.log(value)
 		return [{ a: 1 }, { a: 2 }]
 	})
 	const [list, setList] = useState([
