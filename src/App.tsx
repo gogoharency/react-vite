@@ -1,115 +1,138 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo, useCallback, memo } from 'react'
 import { flushSync } from 'react-dom'
 import reactLogo from './assets/react.svg'
 import viteLogo from './assets/vite.svg'
 import heroImg from './assets/hero.png'
 import './App.css'
 
+// memo包裹 只有属性变化才会更细组件
+const Child = memo(({ onClick }: any) => {
+  console.log('Child....')
+  return <div onClick={onClick}>子节点</div>
+})
+
+// 纯函数组件 每次有状态更新 组件都会更新
+const Child1 = ({ value }: any) => {
+  console.log('Child11111....')
+  return <div>子节点1{value}</div>
+}
+
 interface ffType {
-	name: string,
-	value?: boolean
+  name: string
+  value?: boolean
 }
 
 function App() {
   const [count, setCount] = useState(0)
   const [ff, setFF] = useState<ffType>({ name: '1111', value: true })
-	const [data, setData] = useState({});
-  const [hh, setHH] = useState(() =>{
-		return [{ a: 1 }, { a: 2 }]
-	})
-	const [list, setList] = useState([
-		{ id: 1, name: 'A' },
-		{ id: 2, name: 'B' },
-	]);
-	const [total, setTotal] = useState(0)
+  const [hh, setHH] = useState(() => {
+    // console.log(value)
+    return [{ a: 1 }, { a: 2 }]
+  })
+  const [list, setList] = useState([
+    { id: 1, name: 'A' },
+    { id: 2, name: 'B' },
+  ])
+  const [total, setTotal] = useState(0)
   const st = {
     color: 'red',
   }
 
-	// 新增
-const addItem = () => {
-  setList(prev => [
-    ...prev,
-    { id: Date.now(), name: 'New' }
-  ]);
-};
+  // 新增
+  const addItem = () => {
+    setList((prev) => [...prev, { id: Date.now(), name: 'New' }])
+  }
 
-// 修改
-const updateItem = (id) => {
-  setList(prev =>
-    prev.map(item =>
-      item.id === id
-        ? { ...item, name: 'Updated' }
-        : item
+  // 修改
+  const updateItem = (id) => {
+    setList((prev) =>
+      prev.map((item) => (item.id === id ? { ...item, name: 'Updated' } : item))
     )
-  );
-};
+  }
 
-// 删除
-const removeItem = (id) => {
-  setList(prev =>
-    prev.filter(item => item.id !== id)
-  );
-};
+  // 删除
+  const removeItem = (id) => {
+    setList((prev) => prev.filter((item) => item.id !== id))
+  }
 
   const handle = () => {
+    // setFF({ ...ff, value: false })
 
-    setFF({ ...ff, value: false })
-
-		// 都抛错， 因为value是必须值,需要添加ts非必存校验
+    // 都抛错， 因为value是必须值,需要添加ts非必存校验
     // setFF(prev => {
-		// 	const {value, ...rest} = prev
-		// 	return rest
-		// })
-		setFF(({ value, ...rest }) => rest);
-
-
-		//
-		setData(prev => ({
-			...prev,
-			name: 'Tom',
-			age: 18
-		}));
-		setData(prev => {
-			const { age, ...rest } = prev;
-			return rest;
-		});
+    // 	const {value, ...rest} = prev
+    // 	return rest
+    // })
+    setFF(({ value, ...rest }) => rest)
   }
 
   const handle02 = () => {
-		setCount(pre => {
-			console.log(pre)
-			return pre + 1
-		})
+    setCount((pre) => {
+      console.log(pre)
+      return pre + 1
+    })
     // 主动触发更新
     // flushSync(() => {})
-		console.log(22222)
-    setHH(prev => {
-			console.log(prev)
-    	return [...prev, {a: 3}]
+    console.log(22222)
+    setHH((prev) => {
+      console.log(prev)
+      return [...prev, { a: 3 }]
     })
-		console.log(hh)
+    console.log(hh)
   }
 
-	// useEffect(() => {
-	// 	setTotal(count * 2)
-	// }, [count])
+  // useEffect(() => {
+  // 	setTotal(count * 2)
+  // }, [count])
 
   // useEffect(() => {
-	// 	const T = setInterval(() => {
-	// 		setCount(pre => pre + 1)
-	// 	}, 2000)
-	// 	return () => {
-	// 		clearInterval(T)
-	// 	}
+  // 	const T = setInterval(() => {
+  // 		setCount(pre => pre + 1)
+  // 	}, 2000)
+  // 	return () => {
+  // 		clearInterval(T)
+  // 	}
   // }, [])
+
+  const total2 = useMemo(() => {
+  	let list = [1,2,3];
+  	return list.reduce((prev, current) => prev + current + count, 0)
+  }, [count])
+
+  const total3 = useCallback(() => {
+    let list = [1, 2, 3]
+    return list.reduce((prev, current) => prev + current + count, 0)
+  }, [count])
+
+	const total4 = useMemo(() => {
+    let list = [1, 2, 3]
+		return list.reduce((prev, current) => prev + current + total2, 0)
+  }, [total2])
+
+  const handleClick = useCallback(() => {
+    console.log('点击')
+  }, [])
+
+  // 和上面一样
+  // const handleClick = useMemo(() => {
+  // 	return () => console.log("点击")
+  // }, [])
+
   return (
     <>
       {ff.value ? <div style={st}>321</div> : <>44444</>}
       {hh.map((v, index) => (
         <div key={index}>{v.a}</div>
       ))}
-			{ <div>{count}:{total}</div> }
+      {
+        <div>
+          {count}:{total}
+        </div>
+      }
+      {<>total2: {total2}   total3: {total3()}  total4: {total4}</>}
+      {/* { Child({onClick: handleClick}) } */}
+      <Child onClick={handleClick}></Child>
+      <Child1 value='1'></Child1>
       <section id="center">
         <div className="hero" onClick={handle}>
           <img src={heroImg} className="base" width="170" height="179" alt="" />
